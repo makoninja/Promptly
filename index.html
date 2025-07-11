@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Promptly.ai – Smarter Prompt Fixer</title>
+  <title>Promptly.ai – Advanced Prompt Analyzer</title>
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
@@ -49,11 +49,15 @@
       color: #4caf50;
       margin-bottom: 15px;
     }
+    .insight {
+      margin: 10px 0;
+      color: #e65100;
+      font-weight: bold;
+    }
     .rewrite {
       background: #e3f2fd;
       padding: 10px;
       border-radius: 5px;
-      font-style: italic;
       margin-top: 10px;
     }
     .footer {
@@ -80,78 +84,77 @@
 </head>
 <body>
   <h1>Promptly.ai</h1>
-  <p class="subtitle">The Grammarly for ChatGPT prompts</p>
+  <p class="subtitle">Advanced Analysis for ChatGPT Prompts</p>
   <div class="card">
     <textarea id="promptInput" placeholder="Type or paste your ChatGPT prompt here..."></textarea>
     <button onclick="analyzePrompt()">Analyze My Prompt</button>
   </div>
   <div class="card" id="output" style="display:none;">
     <div class="score" id="promptScore"></div>
-    <div id="suggestions"></div>
-    <div class="rewrite" id="rewriteSuggestion"></div>
+    <div id="promptType" class="insight"></div>
+    <div id="clarityInsight" class="insight"></div>
+    <div id="lengthInsight" class="insight"></div>
+    <div id="specificityInsight" class="insight"></div>
+    <div id="rewrites">
+      <div class="rewrite" id="conciseRewrite"></div>
+      <div class="rewrite" id="detailedRewrite"></div>
+      <div class="rewrite" id="creativeRewrite"></div>
+    </div>
   </div>
   <div class="footer">
     🚀 Built with ❤️ for ChatGPT users.
   </div>
 
   <script defer>
-    const vagueWords = [
-      { word: "good", suggestion: "describe quality (e.g., high-resolution, detailed)" },
-      { word: "bad", suggestion: "describe the problem specifically" },
-      { word: "thing", suggestion: "name the object or concept" },
-      { word: "stuff", suggestion: "list specific items" },
-      { word: "nice", suggestion: "define tone or attribute clearly" },
-      { word: "make", suggestion: "use a stronger verb like 'generate' or 'compose'" },
-      { word: "do", suggestion: "replace with a more descriptive action" }
-    ];
-
-    const vaguePhrases = [
-      { phrase: "something good", suggestion: "be specific: facts or benefits" },
-      { phrase: "make it sound good", suggestion: "define tone: professional, friendly, witty" },
-      { phrase: "tell me about", suggestion: "use 'summarize' or 'give key points'" },
-      { phrase: "a lot", suggestion: "quantify with numbers or examples" },
-      { phrase: "etc", suggestion: "list examples explicitly" }
-    ];
-
     function analyzePrompt() {
-      const input = document.getElementById('promptInput').value;
-      let issuesFound = 0;
-      let highlightedText = input;
+      const input = document.getElementById('promptInput').value.trim();
+      const wordCount = input.split(/\s+/).length;
 
-      // Highlight vague words
-      vagueWords.forEach(({ word, suggestion }) => {
-        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
-        if (regex.test(highlightedText)) {
-          highlightedText = highlightedText.replace(regex, `<span class="highlight" title="${suggestion}">$1</span>`);
-          issuesFound++;
-        }
-      });
+      // Analyze prompt type
+      let type = "Instruction";
+      if (input.endsWith("?")) type = "Question";
+      if (/write|create|compose|generate/i.test(input)) type = "Creative Task";
 
-      // Highlight vague phrases
-      vaguePhrases.forEach(({ phrase, suggestion }) => {
-        const regex = new RegExp(phrase, 'gi');
-        if (regex.test(highlightedText)) {
-          highlightedText = highlightedText.replace(regex, `<span class="highlight" title="${suggestion}">$&</span>`);
-          issuesFound++;
-        }
-      });
+      // Clarity check
+      const vagueIndicators = ["good", "bad", "thing", "stuff", "nice", "do", "make", "tell"];
+      const vagueWordsFound = vagueIndicators.filter(word => new RegExp(`\\b${word}\\b`, 'i').test(input));
+      const clarity = vagueWordsFound.length > 0 ? "Vague words detected: " + vagueWordsFound.join(", ") : "Clear wording.";
 
-      // Calculate a Prompt Score
-      const baseScore = 100 - (issuesFound * 10);
-      const promptScore = Math.max(baseScore, 50); // Floor score at 50
+      // Length check
+      let length = "Optimal length.";
+      if (wordCount < 5) length = "Too short. Add more context.";
+      if (wordCount > 30) length = "Long prompt. Consider simplifying.";
 
-      // Generate a smarter rewrite suggestion
-      let rewrite = input
-        .replace(/\bgood\b/gi, "high-quality")
-        .replace(/\bmake\b/gi, "generate")
-        .replace(/\btell me about\b/gi, "summarize key points of")
-        .replace(/\bething\b/gi, "specific item");
+      // Specificity check
+      let specificity = "Specific enough.";
+      if (/something|anything|stuff|things/i.test(input)) {
+        specificity = "Could be more specific.";
+      }
 
-      const outputDiv = document.getElementById('output');
-      document.getElementById('promptScore').innerHTML = `Prompt Score: ${promptScore}/100`;
-      document.getElementById('suggestions').innerHTML = `<p>${highlightedText}</p><p><em>Hover over highlights for suggestions.</em></p>`;
-      document.getElementById('rewriteSuggestion').innerHTML = `<strong>Suggested Rewrite:</strong><br>${rewrite}`;
-      outputDiv.style.display = 'block';
+      // Prompt Score (basic formula)
+      let score = 100;
+      if (vagueWordsFound.length > 0) score -= vagueWordsFound.length * 10;
+      if (wordCount < 5) score -= 20;
+      if (wordCount > 30) score -= 10;
+      score = Math.max(score, 40);
+
+      // Rewrites
+      const conciseRewrite = "Concise: " + input.replace(/\s+/g, " ").slice(0, 50);
+      const detailedRewrite = "Detailed: " + input + " Provide examples and context.";
+      const creativeRewrite = "Creative: Imagine you are a storyteller. " + input;
+
+      // Display
+      document.getElementById('promptScore').innerHTML = `Prompt Score: ${score}/100`;
+      document.getElementById('promptType').innerHTML = `Prompt Type: ${type}`;
+      document.getElementById('clarityInsight').innerHTML = clarity;
+      document.getElementById('lengthInsight').innerHTML = length;
+      document.getElementById('specificityInsight').innerHTML = specificity;
+
+      document.getElementById('conciseRewrite').innerHTML = `<strong>${conciseRewrite}</strong>`;
+      document.getElementById('detailedRewrite').innerHTML = `<strong>${detailedRewrite}</strong>`;
+      document.getElementById('creativeRewrite').innerHTML = `<strong>${creativeRewrite}</strong>`;
+
+      document.getElementById('output').style.display = 'block';
     }
   </script>
 </body>
