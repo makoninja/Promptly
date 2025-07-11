@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Promptly.ai – Fix Your ChatGPT Prompts</title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #f9fafe;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #4a90e2;
+      margin-bottom: 10px;
+    }
+    p.subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 30px;
+    }
+    textarea {
+      width: 100%;
+      height: 140px;
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+    .highlight {
+      background: #fff3cd;
+      cursor: pointer;
+      border-bottom: 1px dashed #f0ad4e;
+    }
+    .card {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #aaa;
+      font-size: 0.9em;
+    }
+    button {
+      background: #4a90e2;
+      color: white;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      display: block;
+      margin: 0 auto;
+    }
+    button:hover {
+      background: #357ab8;
+    }
+  </style>
+</head>
+<body>
+  <h1>Promptly.ai</h1>
+  <p class="subtitle">The Grammarly for ChatGPT prompts</p>
+  <div class="card">
+    <textarea id="promptInput" placeholder="Type or paste your ChatGPT prompt here..."></textarea>
+    <button onclick="highlightPrompt()">Fix My Prompt</button>
+  </div>
+  <div class="card" id="output" style="display:none;"></div>
+  <div class="footer">
+    🚀 Built with ❤️ for ChatGPT users.
+  </div>
+
+  <script defer>
+    const weakWords = [
+      { word: "good", suggestion: "specific" },
+      { word: "better", suggestion: "more detailed" },
+      { word: "thing", suggestion: "concept or item" },
+      { word: "stuff", suggestion: "details" },
+      { word: "make", suggestion: "generate" },
+      { word: "tell", suggestion: "explain" },
+      { word: "nice", suggestion: "effective" }
+    ];
+
+    function highlightPrompt() {
+      const input = document.getElementById('promptInput').value;
+      let outputHTML = input;
+
+      weakWords.forEach(({ word, suggestion }) => {
+        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+        outputHTML = outputHTML.replace(regex, `<span class="highlight" onclick="replaceWord(this, '${suggestion}')">$1</span>`);
+      });
+
+      const outputDiv = document.getElementById('output');
+      outputDiv.innerHTML = `<h3>Suggestions</h3><p>${outputHTML}</p><p><em>Click highlighted words for stronger suggestions.</em></p>`;
+      outputDiv.style.display = 'block';
+    }
+
+    function replaceWord(element, suggestion) {
+      element.textContent = suggestion;
+      element.style.background = '#d4edda';
+      element.style.borderBottom = 'none';
+    }
+  </script>
+</body>
+</html>
