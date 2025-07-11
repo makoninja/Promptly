@@ -95,6 +95,16 @@
   </div>
 
   <script defer>
+    const vagueWords = [
+      { word: "good", suggestion: "describe quality (e.g., high-resolution, detailed)" },
+      { word: "bad", suggestion: "describe the problem specifically" },
+      { word: "thing", suggestion: "name the object or concept" },
+      { word: "stuff", suggestion: "list specific items" },
+      { word: "nice", suggestion: "define tone or attribute clearly" },
+      { word: "make", suggestion: "use a stronger verb like 'generate' or 'compose'" },
+      { word: "do", suggestion: "replace with a more descriptive action" }
+    ];
+
     const vaguePhrases = [
       { phrase: "something good", suggestion: "be specific: facts or benefits" },
       { phrase: "make it sound good", suggestion: "define tone: professional, friendly, witty" },
@@ -108,6 +118,16 @@
       let issuesFound = 0;
       let highlightedText = input;
 
+      // Highlight vague words
+      vagueWords.forEach(({ word, suggestion }) => {
+        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+        if (regex.test(highlightedText)) {
+          highlightedText = highlightedText.replace(regex, `<span class="highlight" title="${suggestion}">$1</span>`);
+          issuesFound++;
+        }
+      });
+
+      // Highlight vague phrases
       vaguePhrases.forEach(({ phrase, suggestion }) => {
         const regex = new RegExp(phrase, 'gi');
         if (regex.test(highlightedText)) {
@@ -116,15 +136,16 @@
         }
       });
 
-      // Calculate a basic Prompt Score
-      const baseScore = 100 - (issuesFound * 15);
+      // Calculate a Prompt Score
+      const baseScore = 100 - (issuesFound * 10);
       const promptScore = Math.max(baseScore, 50); // Floor score at 50
 
-      // Suggest a basic rewrite
+      // Generate a smarter rewrite suggestion
       let rewrite = input
-        .replace(/something good/gi, "3 specific benefits")
-        .replace(/make it sound good/gi, "use a persuasive and professional tone")
-        .replace(/tell me about/gi, "summarize key points of");
+        .replace(/\bgood\b/gi, "high-quality")
+        .replace(/\bmake\b/gi, "generate")
+        .replace(/\btell me about\b/gi, "summarize key points of")
+        .replace(/\bething\b/gi, "specific item");
 
       const outputDiv = document.getElementById('output');
       document.getElementById('promptScore').innerHTML = `Prompt Score: ${promptScore}/100`;
