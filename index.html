@@ -3,100 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Promptly.ai – Advanced Prompt Analyzer</title>
+  <title>Promptly.ai – Expert Prompt Fixer</title>
   <style>
-    body {
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #f4f6f9;
-      color: #333;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #4a90e2;
-      margin-bottom: 5px;
-    }
-    p.subtitle {
-      text-align: center;
-      color: #777;
-      margin-bottom: 30px;
-    }
-    textarea {
-      width: 100%;
-      height: 140px;
-      padding: 10px;
-      font-size: 16px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      margin-bottom: 20px;
-    }
-    .highlight {
-      background: #fff3cd;
-      cursor: pointer;
-      border-bottom: 1px dashed #f0ad4e;
-    }
-    .card {
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
-    }
-    .score {
-      text-align: center;
-      font-size: 1.4em;
-      color: #4caf50;
-      margin-bottom: 15px;
-    }
-    .insight {
-      margin: 10px 0;
-      color: #e65100;
-      font-weight: bold;
-    }
-    .rewrite {
-      background: #e3f2fd;
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      color: #aaa;
-      font-size: 0.9em;
-    }
-    button {
-      background: #4a90e2;
-      color: white;
-      padding: 12px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: block;
-      margin: 0 auto 10px auto;
-    }
-    button:hover {
-      background: #357ab8;
-    }
+    body { font-family: 'Helvetica Neue', sans-serif; background: #f4f6f9; color: #333; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #4a90e2; margin-bottom: 5px; }
+    p.subtitle { text-align: center; color: #777; margin-bottom: 30px; }
+    textarea { width: 100%; height: 140px; padding: 10px; font-size: 16px; border: 2px solid #ddd; border-radius: 6px; margin-bottom: 20px; }
+    .card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .score { text-align: center; font-size: 1.5em; font-weight: bold; color: #4caf50; margin-bottom: 15px; }
+    .insight { margin: 10px 0; color: #e65100; font-weight: bold; }
+    .rewrite { background: #e3f2fd; padding: 10px; border-radius: 5px; margin-top: 10px; }
+    .footer { text-align: center; margin-top: 30px; color: #aaa; font-size: 0.9em; }
+    button { background: #4a90e2; color: white; padding: 12px 20px; font-size: 16px; border: none; border-radius: 6px; cursor: pointer; display: block; margin: 0 auto 10px auto; }
+    button:hover { background: #357ab8; }
   </style>
 </head>
 <body>
   <h1>Promptly.ai</h1>
-  <p class="subtitle">Advanced Analysis for ChatGPT Prompts</p>
+  <p class="subtitle">Expert Prompt Analysis & Rewrite Suggestions</p>
   <div class="card">
     <textarea id="promptInput" placeholder="Type or paste your ChatGPT prompt here..."></textarea>
     <button onclick="analyzePrompt()">Analyze My Prompt</button>
   </div>
   <div class="card" id="output" style="display:none;">
     <div class="score" id="promptScore"></div>
-    <div id="promptType" class="insight"></div>
-    <div id="clarityInsight" class="insight"></div>
-    <div id="lengthInsight" class="insight"></div>
-    <div id="specificityInsight" class="insight"></div>
+    <div id="insights"></div>
     <div id="rewrites">
-      <div class="rewrite" id="conciseRewrite"></div>
+      <div class="rewrite" id="optimizedRewrite"></div>
       <div class="rewrite" id="detailedRewrite"></div>
       <div class="rewrite" id="creativeRewrite"></div>
     </div>
@@ -110,52 +43,54 @@
       const input = document.getElementById('promptInput').value.trim();
       const wordCount = input.split(/\s+/).length;
 
-      // Analyze prompt type
-      let type = "Instruction";
-      if (input.endsWith("?")) type = "Question";
-      if (/write|create|compose|generate/i.test(input)) type = "Creative Task";
+      // Initialize scoring
+      let score = 100;
 
-      // Clarity check
-      const vagueIndicators = ["good", "bad", "thing", "stuff", "nice", "do", "make", "tell"];
-      const vagueWordsFound = vagueIndicators.filter(word => new RegExp(`\\b${word}\\b`, 'i').test(input));
-      const clarity = vagueWordsFound.length > 0 ? "Vague words detected: " + vagueWordsFound.join(", ") : "Clear wording.";
+      // Tone detection
+      let tone = "Neutral";
+      if (/please|could you/i.test(input)) tone = "Polite";
+      if (/imagine|story|funny|creative/i.test(input)) tone = "Creative";
+      if (/explain|summarize|describe/i.test(input)) tone = "Formal";
 
-      // Length check
-      let length = "Optimal length.";
-      if (wordCount < 5) length = "Too short. Add more context.";
-      if (wordCount > 30) length = "Long prompt. Consider simplifying.";
+      // Syntax issues
+      let syntaxIssues = 0;
+      if (/[,;]\s*and\b/.test(input)) syntaxIssues += 1; // Possible run-on
+      if (/is|was|were|be|been|being/i.test(input) && /by/i.test(input)) syntaxIssues += 1; // Passive voice detected
 
       // Specificity check
-      let specificity = "Specific enough.";
-      if (/something|anything|stuff|things/i.test(input)) {
-        specificity = "Could be more specific.";
-      }
+      let specificityScore = 0;
+      if (/kids|adults|engineers|students|marketers/i.test(input)) specificityScore += 1; // Audience defined
+      if (/word|paragraph|sentence/i.test(input)) specificityScore += 1; // Length defined
+      if (/formal|casual|friendly|academic/i.test(input)) specificityScore += 1; // Style defined
+      if (specificityScore < 2) score -= 15;
 
-      // Prompt Score (basic formula)
-      let score = 100;
-      if (vagueWordsFound.length > 0) score -= vagueWordsFound.length * 10;
-      if (wordCount < 5) score -= 20;
-      if (wordCount > 30) score -= 10;
-      score = Math.max(score, 40);
+      // Adjust score based on issues
+      if (syntaxIssues > 0) score -= syntaxIssues * 10;
+      if (wordCount < 7) score -= 20;
+      if (wordCount > 35) score -= 10;
+      score = Math.max(score, 30);
 
-      // Rewrites
-      const conciseRewrite = "Concise: " + input.replace(/\s+/g, " ").slice(0, 50);
-      const detailedRewrite = "Detailed: " + input + " Provide examples and context.";
-      const creativeRewrite = "Creative: Imagine you are a storyteller. " + input;
+      // Insights
+      let insightsHTML = `<p class='insight'>Tone detected: ${tone}</p>`;
+      if (syntaxIssues > 0) insightsHTML += "<p class='insight'>⚠️ Syntax issues found: possible run-ons or passive voice.</p>";
+      if (specificityScore < 2) insightsHTML += "<p class='insight'>⚠️ Prompt lacks specificity. Define audience, style, or constraints.</p>";
+      if (score >= 85) insightsHTML += "<p class='insight'>✅ Prompt is clear, specific, and well-structured.</p>";
+
+      // Smarter rewrites
+      const optimized = `Optimized: Provide a clear, concise instruction to ChatGPT with specific audience and tone. Example: "Write a 300-word article for kids aged 8-12 explaining basic business concepts in a fun, engaging tone."`;
+      const detailed = `Detailed: Create a comprehensive guide for children about business. Include real-life examples, engaging anecdotes, and simple language suitable for a young audience. Target length: 500 words. Tone: friendly and educational.`;
+      const creative = `Creative: Pretend you are a children's author. Write a short, playful story where a character learns about business by running a lemonade stand. Use dialogue and humor to make it engaging.`;
 
       // Display
       document.getElementById('promptScore').innerHTML = `Prompt Score: ${score}/100`;
-      document.getElementById('promptType').innerHTML = `Prompt Type: ${type}`;
-      document.getElementById('clarityInsight').innerHTML = clarity;
-      document.getElementById('lengthInsight').innerHTML = length;
-      document.getElementById('specificityInsight').innerHTML = specificity;
-
-      document.getElementById('conciseRewrite').innerHTML = `<strong>${conciseRewrite}</strong>`;
-      document.getElementById('detailedRewrite').innerHTML = `<strong>${detailedRewrite}</strong>`;
-      document.getElementById('creativeRewrite').innerHTML = `<strong>${creativeRewrite}</strong>`;
-
+      document.getElementById('insights').innerHTML = insightsHTML;
+      document.getElementById('optimizedRewrite').innerHTML = `<strong>${optimized}</strong>`;
+      document.getElementById('detailedRewrite').innerHTML = `<strong>${detailed}</strong>`;
+      document.getElementById('creativeRewrite').innerHTML = `<strong>${creative}</strong>`;
       document.getElementById('output').style.display = 'block';
     }
   </script>
 </body>
 </html>
+
+
