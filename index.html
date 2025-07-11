@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Promptly.ai – Fix Your ChatGPT Prompts</title>
+  <title>Promptly.ai – Smarter Prompt Fixer</title>
   <style>
     body {
       font-family: 'Helvetica Neue', sans-serif;
-      background: #f9fafe;
+      background: #f4f6f9;
       color: #333;
       margin: 0;
       padding: 20px;
@@ -15,7 +15,7 @@
     h1 {
       text-align: center;
       color: #4a90e2;
-      margin-bottom: 10px;
+      margin-bottom: 5px;
     }
     p.subtitle {
       text-align: center;
@@ -43,6 +43,19 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       margin-bottom: 20px;
     }
+    .score {
+      text-align: center;
+      font-size: 1.4em;
+      color: #4caf50;
+      margin-bottom: 15px;
+    }
+    .rewrite {
+      background: #e3f2fd;
+      padding: 10px;
+      border-radius: 5px;
+      font-style: italic;
+      margin-top: 10px;
+    }
     .footer {
       text-align: center;
       margin-top: 30px;
@@ -58,7 +71,7 @@
       border-radius: 6px;
       cursor: pointer;
       display: block;
-      margin: 0 auto;
+      margin: 0 auto 10px auto;
     }
     button:hover {
       background: #357ab8;
@@ -70,42 +83,54 @@
   <p class="subtitle">The Grammarly for ChatGPT prompts</p>
   <div class="card">
     <textarea id="promptInput" placeholder="Type or paste your ChatGPT prompt here..."></textarea>
-    <button onclick="highlightPrompt()">Fix My Prompt</button>
+    <button onclick="analyzePrompt()">Analyze My Prompt</button>
   </div>
-  <div class="card" id="output" style="display:none;"></div>
+  <div class="card" id="output" style="display:none;">
+    <div class="score" id="promptScore"></div>
+    <div id="suggestions"></div>
+    <div class="rewrite" id="rewriteSuggestion"></div>
+  </div>
   <div class="footer">
     🚀 Built with ❤️ for ChatGPT users.
   </div>
 
   <script defer>
-    const weakWords = [
-      { word: "good", suggestion: "specific" },
-      { word: "better", suggestion: "more detailed" },
-      { word: "thing", suggestion: "concept or item" },
-      { word: "stuff", suggestion: "details" },
-      { word: "make", suggestion: "generate" },
-      { word: "tell", suggestion: "explain" },
-      { word: "nice", suggestion: "effective" }
+    const vaguePhrases = [
+      { phrase: "something good", suggestion: "be specific: facts or benefits" },
+      { phrase: "make it sound good", suggestion: "define tone: professional, friendly, witty" },
+      { phrase: "tell me about", suggestion: "use 'summarize' or 'give key points'" },
+      { phrase: "a lot", suggestion: "quantify with numbers or examples" },
+      { phrase: "etc", suggestion: "list examples explicitly" }
     ];
 
-    function highlightPrompt() {
+    function analyzePrompt() {
       const input = document.getElementById('promptInput').value;
-      let outputHTML = input;
+      let issuesFound = 0;
+      let highlightedText = input;
 
-      weakWords.forEach(({ word, suggestion }) => {
-        const regex = new RegExp(`\\b(${word})\\b`, 'gi');
-        outputHTML = outputHTML.replace(regex, `<span class="highlight" onclick="replaceWord(this, '${suggestion}')">$1</span>`);
+      vaguePhrases.forEach(({ phrase, suggestion }) => {
+        const regex = new RegExp(phrase, 'gi');
+        if (regex.test(highlightedText)) {
+          highlightedText = highlightedText.replace(regex, `<span class="highlight" title="${suggestion}">$&</span>`);
+          issuesFound++;
+        }
       });
 
-      const outputDiv = document.getElementById('output');
-      outputDiv.innerHTML = `<h3>Suggestions</h3><p>${outputHTML}</p><p><em>Click highlighted words for stronger suggestions.</em></p>`;
-      outputDiv.style.display = 'block';
-    }
+      // Calculate a basic Prompt Score
+      const baseScore = 100 - (issuesFound * 15);
+      const promptScore = Math.max(baseScore, 50); // Floor score at 50
 
-    function replaceWord(element, suggestion) {
-      element.textContent = suggestion;
-      element.style.background = '#d4edda';
-      element.style.borderBottom = 'none';
+      // Suggest a basic rewrite
+      let rewrite = input
+        .replace(/something good/gi, "3 specific benefits")
+        .replace(/make it sound good/gi, "use a persuasive and professional tone")
+        .replace(/tell me about/gi, "summarize key points of");
+
+      const outputDiv = document.getElementById('output');
+      document.getElementById('promptScore').innerHTML = `Prompt Score: ${promptScore}/100`;
+      document.getElementById('suggestions').innerHTML = `<p>${highlightedText}</p><p><em>Hover over highlights for suggestions.</em></p>`;
+      document.getElementById('rewriteSuggestion').innerHTML = `<strong>Suggested Rewrite:</strong><br>${rewrite}`;
+      outputDiv.style.display = 'block';
     }
   </script>
 </body>
